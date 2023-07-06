@@ -1,11 +1,3 @@
-//
-//  main.cpp
-//  opengl
-//  OpenGL rainbow triangle
-//
-//  Created by Albert Ye on 6/11/23.
-//
-
 #include <iostream>
 #include <stdc-predef.h>
 #include <cmath>
@@ -18,7 +10,7 @@
 
 using namespace std;
 
-const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_WIDTH = 1000;
 const unsigned int SCR_HEIGHT = 800;
 float speed = 1;
 
@@ -70,7 +62,16 @@ float vertices[] = {
 	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
 	0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
 	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+};
+
+float floors[] = {
+	200.0f, -0.5f, 200.0f, 0.0f, -1.0f, 0.0f,
+	200.0f, -0.5f, -200.0f, 0.0f, -1.0f, 0.0f,
+	-200.0f, -0.5f, -200.0f, 0.0f, -1.0f, 0.0f,
+	200.0f, -0.5f, 200.0f, 0.0f, -1.0f, 0.0f,
+	-200.0f, -0.5f, 200.0f, 0.0f, -1.0f, 0.0f,
+	-200.0f, -0.5f, -200.0f, 0.0f, -1.0f, 0.0f
 };
 
 int main(int argc, const char *argv[])
@@ -106,8 +107,11 @@ int main(int argc, const char *argv[])
 		return -1;
 	}
 
-	// Shader
-	Shader sh = Shader("shader.vert", "shader.frag");
+	// Shaders
+	// Object Shader
+	Shader sh("shader.vert", "shader.frag");
+	// Light Cube Shader
+	Shader cube_sh("cube.vert", "cube.frag"); // figure this one out later
 
 	// generate and process vertex buffer object
 	unsigned int VBO;
@@ -119,7 +123,7 @@ int main(int argc, const char *argv[])
 	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	
 
 	// set vertex attribute pointers
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void *)0);
@@ -163,13 +167,21 @@ int main(int argc, const char *argv[])
 
 		sh.setVec3("objColor", glm::vec3(0.0f, 0.5f, 0.7f));
 		sh.setVec3("lightColor", lightColor);
-		sh.setVec3("lightPos", glm::vec3(camX, 2.0, camZ));
-		sh.setVec3("viewPos", glm::vec3(camX, 0.0, camZ));
+		sh.setVec3("lightPos", glm::vec3(1.0, 0.0, 1.0));
+		sh.setVec3("viewPos", glm::vec3(camX, 1.0, camZ));
 
 		// render the shape
 		sh.use();
 		glBindVertexArray(VAO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 		for (int i = 0; i < sizeof(vertices) / sizeof(float); i += 3)
+		{
+			glDrawArrays(GL_TRIANGLES, i, i + 3);
+		}
+
+		sh.setVec3("objColor", glm::vec3(0.0f, 0.0f, 0.9f));
+		glBufferData(GL_ARRAY_BUFFER, sizeof(floors),   floors,   GL_STATIC_DRAW);
+		for (int i = 0; i < sizeof(floors) / sizeof(float); i += 3)
 		{
 			glDrawArrays(GL_TRIANGLES, i, i + 3);
 		}
